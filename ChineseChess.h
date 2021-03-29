@@ -3,7 +3,7 @@
 //  ChineseChess
 //
 //  Created by Kevin on 2021/3/27.
-//
+//  Upload to Github at 2021/3/39 09:54:56
 //这是一个中国象棋的头文件，使用这个文件能够用于设计中国象棋游戏、中国象棋打谱以及象棋 AI 的开发。
 
 #ifndef ChineseChess_h
@@ -109,9 +109,11 @@ public://参数部分
 public://方法部分
     CHESSSTONE();//空白初始化
     CHESSSTONE(char _name,int pos_x,int pos_y);//定位和名称初始化
+    CHESSSTONE(char _name,Pos _pos);//定位和名称初始化
     CHESSSTONE(int _id);//id 初始化
     //移动
     bool move(int pos_x,int pos_y);//移动到交叉点，true 为移动成功，false 为坐标错误移动失败
+    bool move(Pos _pos);
     //吃子
     bool remove();//将棋子移除棋局,true为成功，false为失败，如棋子已经死亡
 };
@@ -125,16 +127,33 @@ CHESSSTONE::CHESSSTONE()
     position={-1,-1};
     isAlive=false;
 }
-CHESSSTONE::CHESSSTONE(char _name,int pos_x,int pos_y)
+//CHESSSTONE::CHESSSTONE(char _name,int pos_x,int pos_y)
+//{
+//    chess_id=-1;
+//    name_id=isIn(_name, StoneNameBank, 14);
+//    if (name_id==-1||(pos_x<0)||(pos_x>=10)||(pos_y<0)||(pos_y>=9)){
+//        CHESSSTONE();
+//        return;
+//    }
+//    stone_name=StoneNameBank[name_id];
+//    position={pos_x,pos_y};
+//    isAlive=true;
+//    if (name_id<=6){
+//        side=false;
+//    }else{
+//        side=true;
+//    }
+//}
+CHESSSTONE::CHESSSTONE(char _name,Pos _pos)
 {
     chess_id=-1;
     name_id=isIn(_name, StoneNameBank, 14);
-    if (name_id==-1||(pos_x<0)||(pos_x>=10)||(pos_y<0)||(pos_y>=9)){
+    if (name_id==-1||(_pos._x<0)||(_pos._x>=10)||(_pos._y<0)||(_pos._y>=9)){
         CHESSSTONE();
         return;
     }
     stone_name=StoneNameBank[name_id];
-    position={pos_x,pos_y};
+    position=_pos;
     isAlive=true;
     if (name_id<=6){
         side=false;
@@ -144,38 +163,38 @@ CHESSSTONE::CHESSSTONE(char _name,int pos_x,int pos_y)
 }
 //定义棋子库
 const CHESSSTONE StoneBank[32]={
-    CHESSSTONE('K', 9, 4),
-    CHESSSTONE('G', 9, 3),
-    CHESSSTONE('G', 9, 5),
-    CHESSSTONE('B', 9, 2),
-    CHESSSTONE('B', 9, 6),
-    CHESSSTONE('T', 9, 1),
-    CHESSSTONE('T', 9, 7),
-    CHESSSTONE('R', 9, 0),
-    CHESSSTONE('R', 9, 8),
-    CHESSSTONE('C', 7, 1),
-    CHESSSTONE('C', 7, 7),
-    CHESSSTONE('P', 6, 0),
-    CHESSSTONE('P', 6, 2),
-    CHESSSTONE('P', 6, 4),
-    CHESSSTONE('P', 6, 6),
-    CHESSSTONE('P', 6, 8),
-    CHESSSTONE('k', 0, 4),
-    CHESSSTONE('g', 0, 3),
-    CHESSSTONE('g', 0, 5),
-    CHESSSTONE('b', 0, 2),
-    CHESSSTONE('b', 0, 6),
-    CHESSSTONE('t', 0, 1),
-    CHESSSTONE('t', 0, 7),
-    CHESSSTONE('r', 0, 0),
-    CHESSSTONE('r', 0, 8),
-    CHESSSTONE('c', 2, 1),
-    CHESSSTONE('c', 2, 7),
-    CHESSSTONE('p', 3, 0),
-    CHESSSTONE('p', 3, 2),
-    CHESSSTONE('p', 3, 4),
-    CHESSSTONE('p', 3, 6),
-    CHESSSTONE('p', 3, 8)
+    CHESSSTONE('K',{9, 4}),
+    CHESSSTONE('G',{9, 3}),
+    CHESSSTONE('G',{9, 5}),
+    CHESSSTONE('B',{9, 2}),
+    CHESSSTONE('B',{9, 6}),
+    CHESSSTONE('T',{9, 1}),
+    CHESSSTONE('T',{9, 7}),
+    CHESSSTONE('R',{9, 0}),
+    CHESSSTONE('R',{9, 8}),
+    CHESSSTONE('C',{7, 1}),
+    CHESSSTONE('C',{7, 7}),
+    CHESSSTONE('P',{6, 0}),
+    CHESSSTONE('P',{6, 2}),
+    CHESSSTONE('P',{6, 4}),
+    CHESSSTONE('P',{6, 6}),
+    CHESSSTONE('P',{6, 8}),
+    CHESSSTONE('k',{0, 4}),
+    CHESSSTONE('g',{0, 3}),
+    CHESSSTONE('g',{0, 5}),
+    CHESSSTONE('b',{0, 2}),
+    CHESSSTONE('b',{0, 6}),
+    CHESSSTONE('t',{0, 1}),
+    CHESSSTONE('t',{0, 7}),
+    CHESSSTONE('r',{0, 0}),
+    CHESSSTONE('r',{0, 8}),
+    CHESSSTONE('c',{2, 1}),
+    CHESSSTONE('c',{2, 7}),
+    CHESSSTONE('p',{3, 0}),
+    CHESSSTONE('p',{3, 2}),
+    CHESSSTONE('p',{3, 4}),
+    CHESSSTONE('p',{3, 6}),
+    CHESSSTONE('p',{3, 8})
 };
 CHESSSTONE::CHESSSTONE(int _id)
 {
@@ -191,12 +210,21 @@ CHESSSTONE::CHESSSTONE(int _id)
     position=_self.position;
     isAlive=_self.isAlive;
 }
-bool CHESSSTONE::move(int pos_x, int pos_y)
+//bool CHESSSTONE::move(int pos_x, int pos_y)
+//{
+//    if ((pos_x<0)||(pos_x>=10)||(pos_y<0)||(pos_y>=9)){
+//        return false;
+//    }else{
+//        position={pos_x,pos_y};
+//        return true;
+//    }
+//}
+bool CHESSSTONE::move(Pos _pos)
 {
-    if ((pos_x<0)||(pos_x>=10)||(pos_y<0)||(pos_y>=9)){
+    if ((_pos._x<0)||(_pos._x>=10)||(_pos._y<0)||(_pos._y>=9)){
         return false;
     }else{
-        position={pos_x,pos_y};
+        position=_pos;
         return true;
     }
 }
@@ -220,7 +248,22 @@ public://方法部分
     /*涉及的方法有，初始局面布置，棋子的移动，棋子可能移动的点，棋子移动与棋谱的转换，导出局面，导出局面的压缩，将军的判定，叫吃的判定*/
     //根据局面布置棋盘，_type表示局面的类型，true 表示利用压缩型局面，false 表示使用未压缩的格式，初始布局为全局变量ORI_SITU,默认不适用初始局面，若使用初始局面，无论前两项为何值，只要 isOri 为 true,则改变为初始局面
     CHESSBOARD(string _situation,bool _type=true,bool _isOri=false);
-    
+    //两个点之间的距离
+    int distance(int _id1,Pos _pos);//若重合返回0,若不在同一行则返回-1
+    //两个点之间间隔的棋子数目
+    int between(int _id1,Pos _pos);//若重合返回0，若不在同一行返回-1
+    //棋子的移动
+    bool move(int _id,Pos _pos);//移动合理返回 true
+    //棋子能够移动的点
+    vector<Pos> movable(int _id);//返回所有能够移动的点的坐标
+    //是否将军
+    bool is_check(bool _side);//检测的一方，false 为红方，true 为黑方
+    //移动转换为棋谱
+    string move_to_manual(int _id,Pos _pos);//将移动转化为 string 类型的棋谱移动步骤（char[4]）
+    //棋谱转换为实际的移动参数
+    int* manual_to_move(string _manual);//将 string 类型的棋谱移动步骤（char[4]）转化为移动参数(mtm[0]=_id,mtm[1]=_pos._x,mtm[2]=_pos._y)
+    //导出局面
+    string get_situ(bool _type=true);//_type表示局面的类型，true 表示利用压缩型局面，false表示使用未压缩的格式
 };
 //MARK:棋盘类方法
 CHESSBOARD::CHESSBOARD()
