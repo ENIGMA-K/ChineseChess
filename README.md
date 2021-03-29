@@ -7,17 +7,41 @@ It's a coding tool for Chinese chess in C++.
 
 1. 引用声明
 2. 基础方法
-+ 延时函数 void sleep(double _duration)
-+ 随机数 int rnd(int uper)
-+ 生成随机序列 bool* select(int m,int n,int non)
-+ 安全释放指针
-    inline void SafeDelete(T*& pVal)
-    inline void SafeDeleteArray(T*& pVal)
-3. 棋子类 STONE & 棋子行为
-    三种初始化方法+棋子的移动+棋子的移除
-4. 棋盘类 CHESSBOARD & 棋盘类方法
-5. 棋谱类 CHESSMANUAL & 棋谱类方法
-6. 其他行为
+    + 延时函数 void sleep(double _duration)
+    + 随机数 int rnd(int uper)
+    + 生成随机序列 bool* select(int m,int n,int non)
+    + 安全释放指针
+        inline void SafeDelete(T*& pVal)
+        inline void SafeDeleteArray(T*& pVal)
+3. 棋子类 STONE
+    + name_id
+    + chess_id
+    + stone_name
+    + side
+    + position
+    + isAlive
+4. 棋子行为
+    + CHESSSTONE()
+    + CHESSSTONE(char _name,Pos _pos)
+    + CHESSSTONE(int _id)
+    + bool move(int pos_x,int pos_y)
+    + bool move(Pos _pos)
+    + bool remove();
+5. 棋盘类 CHESSBOARD
+    + CHESSSTONE chess_board[32]
+6. 棋盘类方法
+    + CHESSBOARD()
+    + CHESSBOARD(string _situation,bool _type=true,bool _isOri=false)
+    + int distance(int _id1,Pos _pos)
+    + int between(int _id1,Pos _pos)
+    + bool move(int _id,Pos _pos)
+    + vector<Pos> movable(int _id)
+    + bool is_check(bool _side)
+    + string move_to_manual(int _id,Pos _pos)
+    + int* manual_to_move(string _manual)
+    + string get_situ(bool _type=true)
+7. 棋谱类 CHESSMANUAL & 棋谱类方法
+8. 其他行为
 
 ## 棋谱文档格式
 
