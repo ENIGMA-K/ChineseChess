@@ -3,7 +3,7 @@
 //  ChineseChess
 //
 //  Created by Kevin on 2021/3/27.
-//  Upload to Github at 2021/3/31 08:10:23
+//  Upload to Github at 2021/3/31 13:09:16
 //这是一个中国象棋的头文件，使用这个文件能够用于设计中国象棋游戏、中国象棋打谱以及象棋 AI 的开发。
 
 #ifndef ChineseChess_h
@@ -13,7 +13,7 @@
 #include "math.h"
 #include <time.h>
 using namespace std;
-#define ORI_SITU "RTBGKGBTR10C5C1P1P1P1P1P18p1p1p1p1p1c5c10rtbgkgbtr"
+#define ORI_SITU "#@rtbgkgbtr10c5c1p1p1p1p1p18P1P1P1P1P1C5C10RTBGKGBTR@#"
 //MARK:基础方法
 //延时函数
 void sleep(double _duration){
@@ -21,6 +21,21 @@ void sleep(double _duration){
     ts.tv_nsec =(_duration-floor(_duration))*1000000000;
     ts.tv_sec = floor(_duration);
     nanosleep(&ts, &ts1);
+}
+//比大小
+int max(int _a,int _b){
+    if (_a>=_b){
+        return _a;
+    }else{
+        return _b;
+    }
+}
+int min(int _a,int _b){
+    if (_a<=_b){
+        return _a;
+    }else{
+        return _b;
+    }
 }
 //随机数
 int rnd(int uper)
@@ -97,53 +112,25 @@ typedef struct Pos/*九路十行*/
     int _y=0;//[0,8]路
 }Pos;
 //棋子名称序列
-char StoneBank[32]={
+char StoneBankEng[32]={
     'K','G','G','B','B','T','T','R','R','C','C','P','P','P','P','P','k','g','g','b','b','t','t','r','r','c','c','p','p','p','p','p'
+};
+string StoneBankCna[32]={
+    "帅","仕","仕","相","相","马","马","车","车","炮","炮","兵","兵","兵","兵","兵","将","士","士","象","象","馬","馬","車","車","砲","砲","卒","卒","卒","卒","卒"
 };
 //定义棋子集
 typedef struct Stone
 {
-    Pos position={-1,-1};//布局上以黑方1路车为(0,0)，红方1路车为(8,9)
+    Pos position={-1,-1};//布局上以黑方1路车为(0,0)，红方1路车为(9,8)
     bool isAlive=false;//是否还在场上存活
 }Stone;
-//MARK:棋盘类 CHESSBOARD
-class CHESSBOARD
-{
-public://参数部分
-    Stone chess_board[32];//表现场上32个棋子
-    /*棋盘类只有这三十二个棋子，其余的相关内容均不重要，以免影响以后设计 AI 时的运算速度和储存空间*/
-public://方法部分
-    CHESSBOARD();//空白初始化
-    /*涉及的方法有，初始局面布置，棋子的移动，棋子可能移动的点，棋子移动与棋谱的转换，导出局面，导出局面的压缩，将军的判定，叫吃的判定*/
-    //根据局面布置棋盘，_type表示局面的类型，true 表示利用压缩型局面，false 表示使用未压缩的格式，初始布局为全局变量ORI_SITU,默认不适用初始局面，若使用初始局面，无论前两项为何值，只要 isOri 为 true,则改变为初始局面
-    CHESSBOARD(string _situation,bool _type=true,bool _isOri=false);
-    //两个点之间的距离
-    int distance(int _id1,Pos _pos);//若重合返回0,若不在同一行则返回-1
-    //两个点之间间隔的棋子数目
-    int between(int _id1,Pos _pos);//若重合返回0，若不在同一行返回-1
-    //棋子的移动
-    bool move(int _id,Pos _pos);//移动合理返回 true
-    //棋子能够移动的点
-    vector<Pos> movable(int _id);//返回所有能够移动的点的坐标
-    //是否将军
-    bool is_check(bool _side);//检测的一方，false 为红方，true 为黑方
-    //移动转换为棋谱
-    string move_to_manual(int _id,Pos _pos);//将移动转化为 string 类型的棋谱移动步骤（char[4]）
-    //棋谱转换为实际的移动参数
-    int* manual_to_move(string _manual);//将 string 类型的棋谱移动步骤（char[4]）转化为移动参数(mtm[0]=_id,mtm[1]=_pos._x,mtm[2]=_pos._y)
-    //导出局面
-    string get_situ(bool _type=true);//_type表示局面的类型，true 表示利用压缩型局面，false表示使用未压缩的格式
+//初始局面点集
+const Stone StoneSet[32]={
+    {{9,4},true},{{9,3},true},{{9,5},true},{{9,2},true},{{9,6},true},{{9,1},true},{{9,7},true},{{9,0},true},{{9,8},true},{{7,1},true},{{7,7},true},{{6,0},true},{{6,2},true},{{6,4},true},{{6,6},true},{{6,8},true},{{0,4},true},{{0,3},true},{{0,5},true},{{0,2},true},{{0,6},true},{{0,1},true},{{0,7},true},{{0,0},true},{{0,8},true},{{2,1},true},{{2,7},true},{{3,0},true},{{3,2},true},{{3,4},true},{{3,6},true},{{3,8},true}
 };
-//MARK:棋盘类方法
-CHESSBOARD::CHESSBOARD()
-{
-    
-}
-//根据局面布置棋盘，_type表示局面的类型，true 表示利用压缩型局面，false 表示使用未压缩的格式，初始布局为全局变量ORI_SITU,默认不适用初始局面，若使用初始局面，无论前两项为何值，只要 isOri 为 true,则改变为初始局面
-CHESSBOARD::CHESSBOARD(string _situation,bool _type,bool _isOri)
-{
-    
-}
+
+
+
 //MARK:棋谱类 CHESSMANUAL
 /*这里的棋谱指的是具体的下棋步骤，不包括棋局信息等情况*/
 class CHESSMANUAL
@@ -183,6 +170,152 @@ public://方法部分
 CHESSMANUALMAIN::CHESSMANUALMAIN()
 {
     
+}
+//MARK:棋盘类 CHESSBOARD
+class CHESSBOARD
+{
+public://参数部分
+    Stone chess_board[32];//表现场上32个棋子
+    /*棋盘类只有这三十二个棋子，其余的相关内容均不重要，以免影响以后设计 AI 时的运算速度和储存空间*/
+public://方法部分
+    CHESSBOARD();//空白初始化
+    /*涉及的方法有，初始局面布置，棋子的移动，棋子可能移动的点，棋子移动与棋谱的转换，导出局面，导出局面的压缩，将军的判定，叫吃的判定*/
+    //根据局面布置棋盘，_type表示局面的类型，true 表示利用压缩型局面，false 表示使用未压缩的格式，初始布局为全局变量ORI_SITU,默认不适用初始局面，若使用初始局面，无论前两项为何值，只要 isOri 为 true,则改变为初始局面
+    CHESSBOARD(string _situation,bool _type=true,bool _isOri=false);
+    //两个点之间的距离
+    int distance(int _id1,Pos _pos);//若重合返回0,若不在同一行则返回-1
+    //检验某个坐标存在棋子是哪一方的
+    int exist(Pos _pos);//-1为红方，1为黑方，0为不存在
+    //两个点之间间隔的棋子数目
+    int between(int _id1,Pos _pos);//若重合返回0，若不在同一行返回-1
+    //棋子的移动
+    string move(int _id,Pos _pos);//移动合理返回该步棋谱格式，否则返回""
+    //棋子能够移动的点
+    vector<Pos> movable(int _id);//返回所有能够移动的点的坐标
+    //是否将军
+    bool is_check(bool _side);//检测的一方，false 为红方，true 为黑方
+//    //移动转换为棋谱
+//    string move_to_manual(int _id,Pos _pos);//将移动转化为 string 类型的棋谱移动步骤（char[4]）
+    //棋谱转换为实际的移动参数(仅限于英文棋谱)
+    int* manual_to_move(string _manual);//将 string 类型的棋谱移动步骤（char[4]）转化为移动参数(mtm[0]=_id,mtm[1]=_pos._x,mtm[2]=_pos._y)
+    //导出局面
+    string get_situ(bool _type=true);//_type表示局面的类型，true 表示利用压缩型局面，false表示使用未压缩的格式
+};
+//MARK:棋盘类方法
+CHESSBOARD::CHESSBOARD()
+{
+    for (int i=0;i<32;i++){
+        chess_board[i].position={-1,-1};
+        chess_board[i].isAlive=false;
+    }
+}
+//根据局面布置棋盘，_type表示局面的类型，true 表示利用压缩型局面，false 表示使用未压缩的格式，初始布局为全局变量ORI_SITU,默认不适用初始局面，若使用初始局面，无论前两项为何值，只要 isOri 为 true,则改变为初始局面
+CHESSBOARD::CHESSBOARD(string _situation,bool _type,bool _isOri)
+{
+    for (int i=0;i<32;i++/*全部清空*/){
+        chess_board[i].position={-1,-1};
+        chess_board[i].isAlive=false;
+    }
+    if (_isOri){
+        for (int i=0;i<32;i++){
+            chess_board[i]=StoneSet[i];
+        }
+    }else{
+        //检验是否符合棋谱格式#@@#
+        if (!(_situation[0]=='#'&&_situation[1]=='@'&&_situation[_situation.size()-2]=='@'&&_situation[_situation.size()-1]=='#')){
+        }else{
+            string _set_string="";
+            if (_type/*使用压缩型格式描述局面*/){
+                for (int i=2;i<_situation.size()-2;i++){
+                    if (!isnumber(_situation[i])){
+                        _set_string+=_situation[i];
+                    }else{
+                        string _num_of_empty_in_str="";
+                        do {
+                            _num_of_empty_in_str+=_situation[i];
+                            i++;
+                        }while(isnumber(_situation[i]));
+                        int _num_of_empty=stoi(_num_of_empty_in_str);
+                        for (int j=0;j<_num_of_empty;j++){
+                            _set_string+='0';
+                        }
+                        i-=1;
+                    }
+                }
+            }else/*使用非压缩型格式描述局面*/{
+                for (int i=2;i<_situation.size()-2;i++){
+                    _set_string+=_situation[i];
+                }
+            }
+            if (_set_string.size()!=90/*棋谱有误*/){
+                return;
+            }else{
+                for (int i=0;i<90;i++){
+                    if (_set_string[i]!='0'/*有棋子*/){
+                        //查找棋子的 Id
+                        for (int j=0;j<32;j++){
+                            if ((_set_string[i]==StoneBankEng[j])&&chess_board[j].isAlive==false/*找到对应棋子*/){
+                                chess_board[j].position={i/9,i%9};
+                                chess_board[j].isAlive=true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+//两个点之间的距离//若重合返回0,若不在同一行则返回-1
+int CHESSBOARD::distance(int _id1,Pos _pos){
+    int _opt=-1;
+    if (chess_board[_id1].position._x==_pos._x){
+        return abs(chess_board[_id1].position._y-_pos._y);
+    }else if (chess_board[_id1].position._y==_pos._y){
+        return abs(chess_board[_id1].position._x-_pos._x);
+    }
+    return _opt;
+}
+//检验某个坐标存在棋子
+int CHESSBOARD::exist(Pos _pos){
+    for (int i=0;i<16;i++){
+        if ((chess_board[i].position._x==_pos._x)&&(chess_board[i].position._y==_pos._y)){
+            return -1;
+        }
+    }
+    for (int i=16;i<32;i++){
+        if ((chess_board[i].position._x==_pos._x)&&(chess_board[i].position._y==_pos._y)){
+            return 1;
+        }
+    }
+    return 0;
+}
+//两个点之间间隔的棋子数目//若重合返回0，若不在同一行返回-1
+int CHESSBOARD::between(int _id1,Pos _pos){
+    int _opt=0;
+    if (chess_board[_id1].position._x==_pos._x){
+        for (int i=min(chess_board[_id1].position._y,_pos._y)+1;i<max(chess_board[_id1].position._y,_pos._y);i++){
+            if (exist({chess_board[_id1].position._x,i})){
+                _opt++;
+            }
+        }
+    }else if (chess_board[_id1].position._y==_pos._y){
+        for (int i=min(chess_board[_id1].position._x,_pos._x)+1;i<max(chess_board[_id1].position._x,_pos._x);i++){
+            if (exist({i,chess_board[_id1].position._y})){
+                _opt++;
+            }
+        }
+    }else{
+        return -1;
+    }
+    return _opt;
+}
+//棋子的移动//移动合理返回该步棋谱格式，否则返回""
+string CHESSBOARD::move(int _id,Pos _pos){
+    string _opt="";
+    
+    
+    return _opt;
 }
 //MARK:其他行为
 
