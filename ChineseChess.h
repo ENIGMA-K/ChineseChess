@@ -3,7 +3,7 @@
 //  ChineseChess
 //
 //  Created by Kevin on 2021/3/27.
-//  Upload to Github at 2021/3/39 09:54:56
+//  Upload to Github at 2021/3/31 08:10:23
 //这是一个中国象棋的头文件，使用这个文件能够用于设计中国象棋游戏、中国象棋打谱以及象棋 AI 的开发。
 
 #ifndef ChineseChess_h
@@ -85,7 +85,7 @@ inline void SafeDeleteArray(T*& pVal)
         pVal = NULL;
     }
 }
-//MARK:棋子类 CHESSSTONE
+//MARK:棋子相关方法
 //棋子名称数据集
 char StoneNameBank[14]={
     'K','G','B','T','R','C','P','k','g','b','t','r','c','p'
@@ -96,152 +96,21 @@ typedef struct Pos/*九路十行*/
     int _x=0;//[0,9]行
     int _y=0;//[0,8]路
 }Pos;
-class CHESSSTONE
+//棋子名称序列
+char StoneBank[32]={
+    'K','G','G','B','B','T','T','R','R','C','C','P','P','P','P','P','k','g','g','b','b','t','t','r','r','c','c','p','p','p','p','p'
+};
+//定义棋子集
+typedef struct Stone
 {
-public://参数部分
-    int name_id=-1;//表示棋子名称的顺序
-    int chess_id=-1;//只有在一局棋中的初始化，才会带有 chess_id
-    char stone_name=' ';
-    //注意：在棋谱中以缩写表达棋子类型，分别为K/G/B/T/R/C/P/k/g/b/t/r/c/p，大写为红方棋子，小写为黑方棋子。' '作为空值
-    bool side=false;//false 为红方
     Pos position={-1,-1};//布局上以黑方1路车为(0,0)，红方1路车为(8,9)
     bool isAlive=false;//是否还在场上存活
-public://方法部分
-    CHESSSTONE();//空白初始化
-    CHESSSTONE(char _name,int pos_x,int pos_y);//定位和名称初始化
-    CHESSSTONE(char _name,Pos _pos);//定位和名称初始化
-    CHESSSTONE(int _id);//id 初始化
-    //移动
-    bool move(int pos_x,int pos_y);//移动到交叉点，true 为移动成功，false 为坐标错误移动失败
-    bool move(Pos _pos);
-    //吃子
-    bool remove();//将棋子移除棋局,true为成功，false为失败，如棋子已经死亡
-};
-//MARK:棋子行为
-CHESSSTONE::CHESSSTONE()
-{
-    name_id=-1;
-    chess_id=-1;
-    stone_name=' ';
-    side=false;
-    position={-1,-1};
-    isAlive=false;
-}
-//CHESSSTONE::CHESSSTONE(char _name,int pos_x,int pos_y)
-//{
-//    chess_id=-1;
-//    name_id=isIn(_name, StoneNameBank, 14);
-//    if (name_id==-1||(pos_x<0)||(pos_x>=10)||(pos_y<0)||(pos_y>=9)){
-//        CHESSSTONE();
-//        return;
-//    }
-//    stone_name=StoneNameBank[name_id];
-//    position={pos_x,pos_y};
-//    isAlive=true;
-//    if (name_id<=6){
-//        side=false;
-//    }else{
-//        side=true;
-//    }
-//}
-CHESSSTONE::CHESSSTONE(char _name,Pos _pos)
-{
-    chess_id=-1;
-    name_id=isIn(_name, StoneNameBank, 14);
-    if (name_id==-1||(_pos._x<0)||(_pos._x>=10)||(_pos._y<0)||(_pos._y>=9)){
-        CHESSSTONE();
-        return;
-    }
-    stone_name=StoneNameBank[name_id];
-    position=_pos;
-    isAlive=true;
-    if (name_id<=6){
-        side=false;
-    }else{
-        side=true;
-    }
-}
-//定义棋子库
-const CHESSSTONE StoneBank[32]={
-    CHESSSTONE('K',{9, 4}),
-    CHESSSTONE('G',{9, 3}),
-    CHESSSTONE('G',{9, 5}),
-    CHESSSTONE('B',{9, 2}),
-    CHESSSTONE('B',{9, 6}),
-    CHESSSTONE('T',{9, 1}),
-    CHESSSTONE('T',{9, 7}),
-    CHESSSTONE('R',{9, 0}),
-    CHESSSTONE('R',{9, 8}),
-    CHESSSTONE('C',{7, 1}),
-    CHESSSTONE('C',{7, 7}),
-    CHESSSTONE('P',{6, 0}),
-    CHESSSTONE('P',{6, 2}),
-    CHESSSTONE('P',{6, 4}),
-    CHESSSTONE('P',{6, 6}),
-    CHESSSTONE('P',{6, 8}),
-    CHESSSTONE('k',{0, 4}),
-    CHESSSTONE('g',{0, 3}),
-    CHESSSTONE('g',{0, 5}),
-    CHESSSTONE('b',{0, 2}),
-    CHESSSTONE('b',{0, 6}),
-    CHESSSTONE('t',{0, 1}),
-    CHESSSTONE('t',{0, 7}),
-    CHESSSTONE('r',{0, 0}),
-    CHESSSTONE('r',{0, 8}),
-    CHESSSTONE('c',{2, 1}),
-    CHESSSTONE('c',{2, 7}),
-    CHESSSTONE('p',{3, 0}),
-    CHESSSTONE('p',{3, 2}),
-    CHESSSTONE('p',{3, 4}),
-    CHESSSTONE('p',{3, 6}),
-    CHESSSTONE('p',{3, 8})
-};
-CHESSSTONE::CHESSSTONE(int _id)
-{
-    if (_id<0||_id>=32){
-        CHESSSTONE();
-        return;
-    }
-    CHESSSTONE _self=StoneBank[_id];
-    name_id=_self.name_id;
-    chess_id=_self.chess_id;
-    stone_name=_self.stone_name;
-    side=_self.side;
-    position=_self.position;
-    isAlive=_self.isAlive;
-}
-//bool CHESSSTONE::move(int pos_x, int pos_y)
-//{
-//    if ((pos_x<0)||(pos_x>=10)||(pos_y<0)||(pos_y>=9)){
-//        return false;
-//    }else{
-//        position={pos_x,pos_y};
-//        return true;
-//    }
-//}
-bool CHESSSTONE::move(Pos _pos)
-{
-    if ((_pos._x<0)||(_pos._x>=10)||(_pos._y<0)||(_pos._y>=9)){
-        return false;
-    }else{
-        position=_pos;
-        return true;
-    }
-}
-bool CHESSSTONE::remove()
-{
-    if (!isAlive){
-        return false;
-    }else{
-        isAlive=false;
-        return true;
-    }
-}
+}Stone;
 //MARK:棋盘类 CHESSBOARD
 class CHESSBOARD
 {
 public://参数部分
-    CHESSSTONE chess_board[32];//表现场上32个棋子
+    Stone chess_board[32];//表现场上32个棋子
     /*棋盘类只有这三十二个棋子，其余的相关内容均不重要，以免影响以后设计 AI 时的运算速度和储存空间*/
 public://方法部分
     CHESSBOARD();//空白初始化
@@ -267,6 +136,11 @@ public://方法部分
 };
 //MARK:棋盘类方法
 CHESSBOARD::CHESSBOARD()
+{
+    
+}
+//根据局面布置棋盘，_type表示局面的类型，true 表示利用压缩型局面，false 表示使用未压缩的格式，初始布局为全局变量ORI_SITU,默认不适用初始局面，若使用初始局面，无论前两项为何值，只要 isOri 为 true,则改变为初始局面
+CHESSBOARD::CHESSBOARD(string _situation,bool _type,bool _isOri)
 {
     
 }
