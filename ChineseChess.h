@@ -3,7 +3,7 @@
 //  ChineseChess
 //
 //  Created by Kevin on 2021/3/27.
-//  Upload to Github at 2021/3/31 13:09:16
+//  Upload to Github at 2021/4/1 21:42:56
 //这是一个中国象棋的头文件，使用这个文件能够用于设计中国象棋游戏、中国象棋打谱以及象棋 AI 的开发。
 
 #ifndef ChineseChess_h
@@ -188,6 +188,10 @@ public://方法部分
     int exist(Pos _pos);//-1为红方，1为黑方，0为不存在
     //两个点之间间隔的棋子数目
     int between(int _id1,Pos _pos);//若重合返回0，若不在同一行返回-1
+    //棋子在棋谱中的名称
+    string id_to_nickname(int _id1);//注意到，无论哪种形式的棋谱，每一步的四字组的前两位都是用来描述棋子的，故使用此种方法获得棋子在棋谱中的名称
+    //用棋子在棋谱中的名称获得 ID
+    int nickname_to_id(string _nickname);
     //棋子的移动
     string move(int _id,Pos _pos);//移动合理返回该步棋谱格式，否则返回""
     //棋子能够移动的点
@@ -309,6 +313,160 @@ int CHESSBOARD::between(int _id1,Pos _pos){
         return -1;
     }
     return _opt;
+}
+//棋子在棋谱中的名称//注意到，无论哪种形式的棋谱，每一步的四字组的前两位都是用来描述棋子的，故使用此种方法获得棋子在棋谱中的名称
+string CHESSBOARD::id_to_nickname(int _id1){
+    if (!chess_board[_id1].isAlive){
+        return "";//所查找的棋子不存在
+    }
+    string _opt="";
+    //备忘 KGGBBTTRRCCPPPPP kggbbttrrccppppp
+    switch (_id1) {
+        case 0:
+            //K=红方的帅
+            _opt=StoneBankEng[_id1]+to_string(9-chess_board[_id1].position._y);
+            break;
+        case 1:
+        case 3:
+        case 5:
+        case 7:
+        case 9:
+            //红方对称兵（前置位）
+            if (chess_board[_id1+1].isAlive&&(chess_board[_id1].position._y==chess_board[_id1+1].position._y)){
+                //双存活且共线
+                if (chess_board[_id1].position._x>chess_board[_id1+1].position._x){
+                    //所得居后
+                    _opt=&"Z"[StoneBankEng[_id1]];
+                }else{
+                    //所得居前
+                    _opt=&"A"[StoneBankEng[_id1]];
+                }
+            }else{
+                //单存活或不共线
+                _opt=StoneBankEng[_id1]+to_string(9-chess_board[_id1].position._y);
+            }
+            break;
+        case 2:
+        case 4:
+        case 6:
+        case 8:
+        case 10:
+            //红方对称兵（后置位）
+            if (chess_board[_id1-1].isAlive&&(chess_board[_id1].position._y==chess_board[_id1-1].position._y)){
+                //双存活且共线
+                if (chess_board[_id1].position._x>chess_board[_id1-1].position._x){
+                    //所得居后
+                    _opt=&"Z"[StoneBankEng[_id1]];
+                }else{
+                    //所得居前
+                    _opt=&"A"[StoneBankEng[_id1]];
+                }
+            }else{
+                //单存活或不共线
+                _opt=StoneBankEng[_id1]+to_string(9-chess_board[_id1].position._y);
+            }
+            break;
+        case 11:
+        case 12:
+        case 13:
+        case 14:
+        case 15:
+            //红方兵
+            int group[5];//兵的纵列值
+            int group_ori[5];//兵的 Id
+            for (int i=0;i<5;i++){
+                group_ori[i]=i+10;
+                group[i]=chess_board[i+10].position._x;
+            }
+            for (int i=0;i<4;i++){
+                for (int j=i;j<4;j++){
+                    //swich j j+1
+                    //升序排列
+                    if (group[i]>=group[i+1]){
+                        int inst=group[i];
+                        group[i]=group[i+1];
+                        group[i+1]=inst;
+                        inst=group_ori[i];
+                        group_ori[i]=group_ori[i+1];
+                        group_ori[i+1]=inst;
+                    }
+                }
+            }
+            //检查共列数目
+            int same_line[5];
+            for (int i=0;i<5;i++){
+                same_line[i]=0;
+            }
+            int _numOfRow;
+            _numOfRow=0;
+            same_line[0]=1;
+            for (int i=1;i<5;i++){
+                if (!(group[i]==group[i-1])){
+                    _numOfRow++;
+                }
+                same_line[_numOfRow]++;
+            }
+            
+            break;
+        case 16:
+        
+            break;
+        case 17:
+        
+            break;
+        case 18:
+        
+            break;
+        case 19:
+        
+            break;
+        case 20:
+        
+            break;
+        case 21:
+        
+            break;
+        case 22:
+        
+            break;
+        case 23:
+        
+            break;
+        case 24:
+        
+            break;
+        case 25:
+        
+            break;
+        case 26:
+        
+            break;
+        case 27:
+        
+            break;
+        case 28:
+        
+            break;
+        case 29:
+        
+            break;
+        case 30:
+        
+            break;
+        case 31:
+        
+            break;
+        case 32:
+        
+            break;
+        default:
+            break;
+    }
+    return _opt;
+}
+//用棋子在棋谱中的名称获得 ID
+int CHESSBOARD::nickname_to_id(string _nickname){
+    return -1;
 }
 //棋子的移动//移动合理返回该步棋谱格式，否则返回""
 string CHESSBOARD::move(int _id,Pos _pos){
