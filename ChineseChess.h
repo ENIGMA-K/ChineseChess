@@ -3,7 +3,7 @@
 //  ChineseChess
 //
 //  Created by Kevin on 2021/3/27.
-//  Upload to Github at 2021/4/1 21:42:56
+//  Upload to Github at 2021/4/2 12:45:49
 //这是一个中国象棋的头文件，使用这个文件能够用于设计中国象棋游戏、中国象棋打谱以及象棋 AI 的开发。
 
 #ifndef ChineseChess_h
@@ -184,8 +184,8 @@ public://方法部分
     CHESSBOARD(string _situation,bool _type=true,bool _isOri=false);
     //两个点之间的距离
     int distance(int _id1,Pos _pos);//若重合返回0,若不在同一行则返回-1
-    //检验某个坐标存在棋子是哪一方的
-    int exist(Pos _pos);//-1为红方，1为黑方，0为不存在
+    //得到某个坐标棋子 id
+    int exist(Pos _pos);//-1为不存在
     //两个点之间间隔的棋子数目
     int between(int _id1,Pos _pos);//若重合返回0，若不在同一行返回-1
     //棋子在棋谱中的名称
@@ -282,30 +282,25 @@ int CHESSBOARD::distance(int _id1,Pos _pos){
 }
 //检验某个坐标存在棋子
 int CHESSBOARD::exist(Pos _pos){
-    for (int i=0;i<16;i++){
+    for (int i=0;i<32;i++){
         if ((chess_board[i].position._x==_pos._x)&&(chess_board[i].position._y==_pos._y)){
-            return -1;
+            return i;
         }
     }
-    for (int i=16;i<32;i++){
-        if ((chess_board[i].position._x==_pos._x)&&(chess_board[i].position._y==_pos._y)){
-            return 1;
-        }
-    }
-    return 0;
+    return -1;
 }
 //两个点之间间隔的棋子数目//若重合返回0，若不在同一行返回-1
 int CHESSBOARD::between(int _id1,Pos _pos){
     int _opt=0;
     if (chess_board[_id1].position._x==_pos._x){
         for (int i=min(chess_board[_id1].position._y,_pos._y)+1;i<max(chess_board[_id1].position._y,_pos._y);i++){
-            if (exist({chess_board[_id1].position._x,i})){
+            if (exist({chess_board[_id1].position._x,i})!=-1){
                 _opt++;
             }
         }
     }else if (chess_board[_id1].position._y==_pos._y){
         for (int i=min(chess_board[_id1].position._x,_pos._x)+1;i<max(chess_board[_id1].position._x,_pos._x);i++){
-            if (exist({i,chess_board[_id1].position._y})){
+            if (exist({i,chess_board[_id1].position._y})!=-1){
                 _opt++;
             }
         }
@@ -321,6 +316,9 @@ string CHESSBOARD::id_to_nickname(int _id1){
     }
     string _opt="";
     //备忘 KGGBBTTRRCCPPPPP kggbbttrrccppppp
+    vector<int> _AllPawn[9];//在统计兵时需要用到 Mrk0
+    int UseId=0;//在统计兵时需要用到 Mrk1
+    int _multiLine=0;//在统计兵时需要用到 Mrk2,指的是有多个兵的列数
     switch (_id1) {
         case 0:
             //K=红方的帅
@@ -372,92 +370,191 @@ string CHESSBOARD::id_to_nickname(int _id1){
         case 14:
         case 15:
             //红方兵
-            int group[5];//兵的纵列值
-            int group_ori[5];//兵的 Id
-            for (int i=0;i<5;i++){
-                group_ori[i]=i+10;
-                group[i]=chess_board[i+10].position._x;
+            //按列统计红方兵//在统计兵时需要用到 Mrk0
+            for (int j=0;j<9;j++){
+                _AllPawn[j].clear();
             }
-            for (int i=0;i<4;i++){
-                for (int j=i;j<4;j++){
-                    //swich j j+1
-                    //升序排列
-                    if (group[i]>=group[i+1]){
-                        int inst=group[i];
-                        group[i]=group[i+1];
-                        group[i+1]=inst;
-                        inst=group_ori[i];
-                        group_ori[i]=group_ori[i+1];
-                        group_ori[i+1]=inst;
+            for (int j=0;j<9;j++){
+                for (int i=0;i<10;i++){
+                    //在统计兵时需要用到 Mrk1
+                    UseId=exist({i,j});
+                    if (UseId!=-1/*存在棋子*/&&StoneBankEng[UseId]=='P'/*是兵*/&&chess_board[UseId].isAlive/*活着*/){
+                    //检测到是红方的兵
+                        _AllPawn[j].push_back(UseId);
                     }
                 }
             }
-            //检查共列数目
-            int same_line[5];
-            for (int i=0;i<5;i++){
-                same_line[i]=0;
-            }
-            int _numOfRow;
-            _numOfRow=0;
-            same_line[0]=1;
-            for (int i=1;i<5;i++){
-                if (!(group[i]==group[i-1])){
-                    _numOfRow++;
+            //这里已经将所有的红方的兵列在 AllPawn 里了
+            _multiLine=0;
+            for (int j=0;j<9;j++){
+                if (_AllPawn[j].size()>=2){
+                    _multiLine++;
                 }
-                same_line[_numOfRow]++;
             }
-            
+            //检查目标的兵在哪一列，第几个
+            if (_AllPawn[chess_board[_id1].position._y].size()==1){
+                _opt=StoneBankEng[_id1]+to_string(9-chess_board[_id1].position._y);
+                break;//out of switch
+            }else if (_AllPawn[chess_board[_id1].position._y].size()==2){
+                if (_AllPawn[chess_board[_id1].position._y][0]==_id1){
+                    //前（x 值小）
+                    _opt="A";
+                }else{
+                    //后
+                    _opt="Z";
+                }
+            }else if (_AllPawn[chess_board[_id1].position._y].size()==3){
+                if (_AllPawn[chess_board[_id1].position._y][0]==_id1){
+                    //前（x 值小）
+                    _opt="A";
+                }else if (_AllPawn[chess_board[_id1].position._y][1]==_id1){
+                    //中
+                    _opt="M";
+                }else if (_AllPawn[chess_board[_id1].position._y][2]==_id1){
+                    //后
+                    _opt="Z";
+                }
+            }else{//4或5个
+                if (_AllPawn[chess_board[_id1].position._y][0]==_id1){
+                    //1（x 值小）
+                    _opt="1";
+                }else if (_AllPawn[chess_board[_id1].position._y][1]==_id1){
+                    //2
+                    _opt="2";
+                }else if (_AllPawn[chess_board[_id1].position._y][2]==_id1){
+                    //3
+                    _opt="3";
+                }else if (_AllPawn[chess_board[_id1].position._y][3]==_id1){
+                    //4
+                    _opt="4";
+                }else{
+                    //5
+                    _opt="5";
+                }
+            }
+            if (_multiLine>=2) {
+                _opt+=to_string(9-chess_board[_id1].position._y);
+            }else{
+                _opt+=StoneBankEng[_id1];
+            }
             break;
         case 16:
-        
+            //k
+            _opt=StoneBankEng[_id1]+to_string(chess_board[_id1].position._y+1);
             break;
         case 17:
-        
+        case 19:
+        case 21:
+        case 23:
+        case 25:
+            //黑方对称兵（前置位）
+            if (chess_board[_id1+1].isAlive&&(chess_board[_id1].position._y==chess_board[_id1+1].position._y)){
+                //双存活且共线
+                if (chess_board[_id1].position._x<chess_board[_id1+1].position._x){
+                    //所得居后
+                    _opt=&"z"[StoneBankEng[_id1]];
+                }else{
+                    //所得居前
+                    _opt=&"a"[StoneBankEng[_id1]];
+                }
+            }else{
+                //单存活或不共线
+                _opt=StoneBankEng[_id1]+to_string(chess_board[_id1].position._y+1);
+            }
             break;
         case 18:
-        
-            break;
-        case 19:
-        
-            break;
         case 20:
-        
-            break;
-        case 21:
-        
-            break;
         case 22:
-        
-            break;
-        case 23:
-        
-            break;
         case 24:
-        
-            break;
-        case 25:
-        
-            break;
         case 26:
-        
+            //黑方对称兵（后置位）
+            if (chess_board[_id1-1].isAlive&&(chess_board[_id1].position._y==chess_board[_id1-1].position._y)){
+                //双存活且共线
+                if (chess_board[_id1].position._x<chess_board[_id1-1].position._x){
+                    //所得居后
+                    _opt=&"z"[StoneBankEng[_id1]];
+                }else{
+                    //所得居前
+                    _opt=&"a"[StoneBankEng[_id1]];
+                }
+            }else{
+                //单存活或不共线
+                _opt=StoneBankEng[_id1]+to_string(chess_board[_id1].position._y+1);
+            }
             break;
         case 27:
-        
-            break;
         case 28:
-        
-            break;
         case 29:
-        
-            break;
         case 30:
-        
-            break;
         case 31:
-        
-            break;
-        case 32:
-        
+            //黑方兵
+            //按列统计黑方兵//在统计兵时需要用到 Mrk0
+            for (int j=0;j<9;j++){
+                _AllPawn[j].clear();
+            }
+            for (int j=0;j<9;j++){
+                for (int i=0;i<10;i++){
+                    //在统计兵时需要用到 Mrk1
+                    UseId=exist({i,j});
+                    if (UseId!=-1/*存在棋子*/&&StoneBankEng[UseId]=='p'/*是黑兵*/&&chess_board[UseId].isAlive/*活着*/){
+                    //检测到是红方的兵
+                        _AllPawn[j].push_back(UseId);
+                    }
+                }
+            }
+            //这里已经将所有的红方的兵列在 AllPawn 里了
+            _multiLine=0;
+            for (int j=0;j<9;j++){
+                if (_AllPawn[j].size()>=2){
+                    _multiLine++;
+                }
+            }
+            //检查目标的兵在哪一列，第几个
+            if (_AllPawn[chess_board[_id1].position._y].size()==1){
+                _opt=StoneBankEng[_id1]+to_string(1+chess_board[_id1].position._y);
+                break;//out of switch
+            }else if (_AllPawn[chess_board[_id1].position._y].size()==2){
+                if (_AllPawn[chess_board[_id1].position._y][0]==_id1){
+                    //后（x 值小）
+                    _opt="z";
+                }else{
+                    //前
+                    _opt="a";
+                }
+            }else if (_AllPawn[chess_board[_id1].position._y].size()==3){
+                if (_AllPawn[chess_board[_id1].position._y][0]==_id1){
+                    //后（x 值小）
+                    _opt="z";
+                }else if (_AllPawn[chess_board[_id1].position._y][1]==_id1){
+                    //中
+                    _opt="m";
+                }else if (_AllPawn[chess_board[_id1].position._y][2]==_id1){
+                    //前
+                    _opt="a";
+                }
+            }else{//4或5个
+                if (_AllPawn[chess_board[_id1].position._y][0]==_id1){
+                    //1（x 值小）
+                    _opt=to_string(_AllPawn[chess_board[_id1].position._y].size());
+                }else if (_AllPawn[chess_board[_id1].position._y][1]==_id1){
+                    //2
+                    _opt=to_string(_AllPawn[chess_board[_id1].position._y].size()-1);
+                }else if (_AllPawn[chess_board[_id1].position._y][2]==_id1){
+                    //3
+                    _opt=to_string(_AllPawn[chess_board[_id1].position._y].size()-2);
+                }else if (_AllPawn[chess_board[_id1].position._y][3]==_id1){
+                    //4
+                    _opt=to_string(_AllPawn[chess_board[_id1].position._y].size()-3);
+                }else{
+                    //5
+                    _opt=to_string(_AllPawn[chess_board[_id1].position._y].size()-4);
+                }
+            }
+            if (_multiLine>=2) {
+                _opt+=to_string(1+chess_board[_id1].position._y);
+            }else{
+                _opt+=StoneBankEng[_id1];
+            }
             break;
         default:
             break;
