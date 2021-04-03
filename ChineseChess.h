@@ -3,7 +3,7 @@
 //  ChineseChess
 //
 //  Created by Kevin on 2021/3/27.
-//  Upload to Github at 2021/4/2 12:45:49
+//  Upload to Github at 2021/4/3 08:16:42
 //这是一个中国象棋的头文件，使用这个文件能够用于设计中国象棋游戏、中国象棋打谱以及象棋 AI 的开发。
 
 #ifndef ChineseChess_h
@@ -283,7 +283,7 @@ int CHESSBOARD::distance(int _id1,Pos _pos){
 //检验某个坐标存在棋子
 int CHESSBOARD::exist(Pos _pos){
     for (int i=0;i<32;i++){
-        if ((chess_board[i].position._x==_pos._x)&&(chess_board[i].position._y==_pos._y)){
+        if ((chess_board[i].position._x==_pos._x)&&(chess_board[i].position._y==_pos._y)&&chess_board[i].isAlive){
             return i;
         }
     }
@@ -563,6 +563,27 @@ string CHESSBOARD::id_to_nickname(int _id1){
 }
 //用棋子在棋谱中的名称获得 ID
 int CHESSBOARD::nickname_to_id(string _nickname){
+    int _opt=-1;
+    //拆分类型
+    char _FirstChar=_nickname[0];
+    char _SecondChar=_nickname[1];
+    if (isIn(_FirstChar, StoneNameBank, 14)!=-1){
+        //1. 一般类型（例：兵七进一)
+        for (int i=0;i<10;i++){
+            int trying=exist({i,_SecondChar-48});
+            if (trying!=-1){//char 转 int<=>char-48
+                if (StoneBankEng[trying]==_FirstChar){
+                    _opt=trying;
+                }
+            }
+        }
+    }else if (isIn(_SecondChar, StoneNameBank, 14)!=-1){
+        //2. 共线类型（例：前兵平四）
+        
+    }else{
+        //3. 多兵多线（例：前五进一）
+    }
+    
     return -1;
 }
 //棋子的移动//移动合理返回该步棋谱格式，否则返回""
