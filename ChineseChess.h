@@ -3,7 +3,7 @@
 //  ChineseChess
 //
 //  Created by Kevin on 2021/3/27.
-//  Upload to Github at 2021/4/3 08:16:42
+//  Upload to Github at 2021/4/4 21:15:37
 //这是一个中国象棋的头文件，使用这个文件能够用于设计中国象棋游戏、中国象棋打谱以及象棋 AI 的开发。
 
 #ifndef ChineseChess_h
@@ -579,6 +579,9 @@ int CHESSBOARD::nickname_to_id(string _nickname){
         }
     }else if (isIn(_SecondChar, StoneNameBank, 14)!=-1){
         //2. 共线类型（例：前兵平四）
+        //分为两个小类（兵和非兵）
+        
+        
         
     }else{
         //3. 多兵多线（例：前五进一）
